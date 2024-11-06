@@ -1,8 +1,9 @@
 {
   "name": "web-comp-analyzer",
-  "displayName": "web-comp-analyzer",
-  "description": "",
+  "displayName": "Web Components Analyzer",
+  "description": "A plugin for vscode to view your web components dependency graph",
   "version": "0.0.1",
+  "license": "MIT",
   "engines": {
     "vscode": "^1.94.0"
   },
@@ -12,9 +13,26 @@
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "web-comp-analyzer-explorer",
+          "title": "Explorer",
+          "icon": "assets/tree.svg"
+        }
+      ]
+    },
+    "views": {
+      "web-comp-analyzer-explorer": [
+          {
+            "id": "componentTree",
+            "name": "Component Tree"
+          }
+      ]
+    },
     "commands": [
       {
-        "command": "web-comp-analyzer.helloWorld",
+        "command": "web-comp-analyzer-explorer.helloWorld",
         "title": "Mensagem de Hello World"
       }
     ]
