@@ -5,6 +5,17 @@ import * as path from 'path';
 
 const STENCIL_CONFIG_FILE_NAME = 'stencil.config.ts';
 
+type Components = Array<{
+    tag: string;
+    docs: string;
+    dependents: Array<string>;
+    dependencies: Array<string>;
+}>
+
+type DocsJson = {
+    components: Components;
+}
+
 export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Dependency> {
     private _onDidChangeTreeData: vscode.EventEmitter<Dependency | undefined | void> = new vscode.EventEmitter<Dependency | undefined | void>();
     readonly onDidChangeTreeData: vscode.Event<Dependency | undefined | void> = this._onDidChangeTreeData.event;
@@ -17,20 +28,20 @@ export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Depend
     }
 
     getChildren(element?: any): vscode.ProviderResult<Dependency[]> {
+        console.log('getChildren');
         if (!this.workspaceRoot) {
             vscode.window.showInformationMessage('No Web Component in empty workspace');
             return Promise.resolve([]);
         }
 
-        if (element) {
+        const docsJson = this.getDocsJson(this.workspaceRoot);
 
+        if (element) {
+            console.log({element});
+            // TODO: Pegar os filhos do element e montar mais um pedaço da árvore
         } else {
-            const stencilConfigPath = path.join(this.workspaceRoot, STENCIL_CONFIG_FILE_NAME);
-            const docsJsonPath = path.join(this.workspaceRoot, this.getDocsJsonPath(stencilConfigPath));
-            if(docsJsonPath && this.pathExists(docsJsonPath)) {
-			    const docsJson = JSON.parse(fs.readFileSync(docsJsonPath, 'utf-8'));
-                console.log(docsJson);
-            }
+            const root = docsJson?.components?.filter(component => component.dependents.length === 0);
+            // TODO: Pegar os root e montar a raiz da árvore
         }
     }
 
@@ -40,6 +51,24 @@ export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Depend
 
     resolveTreeItem?(item: vscode.TreeItem, element: Dependency, token: vscode.CancellationToken): vscode.ProviderResult<vscode.TreeItem> {
         throw new Error('Method not implemented.');
+    }
+
+    // private getDependenciesInDocsJson(): Dependency[] {
+
+    // }
+
+    private getDocsJson(workspaceRoot: string): DocsJson | null {
+        try {
+            const stencilConfigPath = path.join(workspaceRoot, STENCIL_CONFIG_FILE_NAME);
+            const docsJsonPath = path.join(workspaceRoot, this.getDocsJsonPath(stencilConfigPath));
+            if(docsJsonPath && this.pathExists(docsJsonPath)) {
+			    return JSON.parse(fs.readFileSync(docsJsonPath, 'utf-8'));
+            }
+        } catch (error) {
+            console.error(`Error reading docs-json: ${error}`);
+        }
+
+        return null;
     }
 
     private getDocsJsonPath(stencilConfigPath: string): string {
@@ -124,14 +153,9 @@ export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Depend
 
 export class Dependency extends vscode.TreeItem {
     constructor(
-        public readonly fileName: string,
-        public readonly filePath: string,
         public readonly tag: string,
         public readonly docs: string,
-        public readonly dependents: Array<string>,
-        public readonly dependencies: Array<string>,
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
-        public readonly command?: vscode.Command
     ) {
         super(tag, collapsibleState);
 
@@ -139,6 +163,4 @@ export class Dependency extends vscode.TreeItem {
         this.tooltip = this.tag;
         this.description = this.docs;
     }
-
-    contextValue = 'dependency';
 }
