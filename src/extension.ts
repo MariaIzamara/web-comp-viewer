@@ -10,13 +10,14 @@ export function activate(context: vscode.ExtensionContext) {
 	const rootPath = (vscode.workspace.workspaceFolders && (vscode.workspace.workspaceFolders.length > 0))
 		? vscode.workspace.workspaceFolders[0].uri.fsPath : undefined;
 
-	console.log({rootPath});
+	if (!rootPath) {
+		vscode.window.showInformationMessage('No folder opened!');
+		return;
+	}
 
 	const componentTreeDataProvider = new ComponentTreeDataProvider(rootPath);
 
 	vscode.window.registerTreeDataProvider('componentTree', componentTreeDataProvider);
-
-	console.log('Congratulations, your extension "web-comp-analyzer" is now active!');
 }
 
-export function deactivate() {}
+export function deactivate() { }

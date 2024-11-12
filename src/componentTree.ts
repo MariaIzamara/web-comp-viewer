@@ -1,74 +1,91 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
-import * as ts from 'typescript';
+import ts from 'typescript';
 import * as path from 'path';
 
 const STENCIL_CONFIG_FILE_NAME = 'stencil.config.ts';
 
-type Components = Array<{
+type Component = {
     tag: string;
     docs: string;
-    dependents: Array<string>;
-    dependencies: Array<string>;
-}>
+    dependents: string[];
+    dependencies: string[];
+};
 
 type DocsJson = {
-    components: Components;
+    components: Component[];
 }
 
-export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Dependency> {
-    private _onDidChangeTreeData: vscode.EventEmitter<Dependency | undefined | void> = new vscode.EventEmitter<Dependency | undefined | void>();
-    readonly onDidChangeTreeData: vscode.Event<Dependency | undefined | void> = this._onDidChangeTreeData.event;
+export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Node> {
+    private rootNodes: Node[] = [];
 
-    constructor(private workspaceRoot: string | undefined) {
+    readonly onDidChangeTreeData!: vscode.Event<Node | undefined | void>;
+
+    constructor(private workspaceRoot: string) {
     }
 
-    getTreeItem(element: Dependency): vscode.TreeItem | Thenable<vscode.TreeItem> {
+    getTreeItem(element: Node): vscode.TreeItem | Thenable<vscode.TreeItem> {
         return element;
     }
 
-    getChildren(element?: any): vscode.ProviderResult<Dependency[]> {
-        console.log('getChildren');
-        if (!this.workspaceRoot) {
-            vscode.window.showInformationMessage('No Web Component in empty workspace');
-            return Promise.resolve([]);
-        }
-
+    getChildren(element?: Node): vscode.ProviderResult<Node[]> {
         const docsJson = this.getDocsJson(this.workspaceRoot);
 
         if (element) {
-            console.log({element});
-            // TODO: Pegar os filhos do element e montar mais um pedaço da árvore
+            return this.getElementNodes(this.rootNodes, element);
         } else {
-            const root = docsJson?.components?.filter(component => component.dependents.length === 0);
-            // TODO: Pegar os root e montar a raiz da árvore
+            this.rootNodes = this.getRootNodesInDocsJson(docsJson);
+            return this.rootNodes;
         }
     }
 
-    // getParent?(element: Dependency) {
-    //     throw new Error('Method not implemented.');
-    // }
+    private getElementNodes(root: Node[], element: Node): Node[] {
+        const dependencies = element.dependencies;
 
-    resolveTreeItem?(item: vscode.TreeItem, element: Dependency, token: vscode.CancellationToken): vscode.ProviderResult<vscode.TreeItem> {
-        throw new Error('Method not implemented.');
+        return dependencies.flatMap(dependency => {
+            const component = root.find(component => component.tag === dependency);
+
+            if (!component) {
+                return [];
+            }
+
+            const { tag, docs, dependents, dependencies } = component;
+            const collapsibleState = dependencies.length > 0
+                ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None;
+
+            return [new Node(tag, docs, dependents, dependencies, collapsibleState)];
+        });
     }
 
-    // private getDependenciesInDocsJson(): Dependency[] {
+    private getRootNodesInDocsJson(docsJson: DocsJson | undefined): Node[] {
+        if (!docsJson) {
+            return [];
+        }
 
-    // }
+        const components = docsJson.components;
 
-    private getDocsJson(workspaceRoot: string): DocsJson | null {
+        return components.map(component => {
+            const { tag, docs, dependents, dependencies } = component;
+            const filteredDependencies = dependencies.filter(dependency => components.find(component => component.tag === dependency));
+            const collapsibleState = filteredDependencies.length > 0
+                ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None;
+
+            return new Node(tag, docs, dependents, filteredDependencies, collapsibleState);
+        });
+    }
+
+    private getDocsJson(workspaceRoot: string): DocsJson | undefined {
         try {
             const stencilConfigPath = path.join(workspaceRoot, STENCIL_CONFIG_FILE_NAME);
             const docsJsonPath = path.join(workspaceRoot, this.getDocsJsonPath(stencilConfigPath));
-            if(docsJsonPath && this.pathExists(docsJsonPath)) {
-			    return JSON.parse(fs.readFileSync(docsJsonPath, 'utf-8'));
+            if (docsJsonPath && this.pathExists(docsJsonPath)) {
+                return JSON.parse(fs.readFileSync(docsJsonPath, 'utf-8'));
             }
         } catch (error) {
             console.error(`Error reading docs-json: ${error}`);
         }
 
-        return null;
+        return;
     }
 
     private getDocsJsonPath(stencilConfigPath: string): string {
@@ -95,7 +112,7 @@ export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Depend
                 node.declarationList.declarations.length > 0
             ) {
                 const declaration = node.declarationList.declarations[0];
-                
+
                 if (
                     ts.isIdentifier(declaration.name) &&
                     declaration.name.text === 'config' &&
@@ -103,24 +120,24 @@ export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Depend
                     ts.isObjectLiteralExpression(declaration.initializer)
                 ) {
                     const outputTargetsProperty = declaration.initializer.properties.find(prop =>
-                            ts.isPropertyAssignment(prop) &&
-                            ts.isIdentifier(prop.name) &&
-                            prop.name.text === 'outputTargets'
-                        ) as ts.PropertyAssignment | undefined;
-                
+                        ts.isPropertyAssignment(prop) &&
+                        ts.isIdentifier(prop.name) &&
+                        prop.name.text === 'outputTargets'
+                    ) as ts.PropertyAssignment | undefined;
+
                     if (outputTargetsProperty && ts.isArrayLiteralExpression(outputTargetsProperty.initializer)) {
                         const outputTargetsArray = outputTargetsProperty.initializer.elements;
-                
+
                         for (const element of outputTargetsArray) {
                             if (ts.isObjectLiteralExpression(element)) {
                                 const typeProperty = element.properties.find(prop =>
-                                        ts.isPropertyAssignment(prop) &&
-                                        ts.isIdentifier(prop.name) &&
-                                        prop.name.text === 'type' &&
-                                        ts.isStringLiteral(prop.initializer) &&
-                                        prop.initializer.text === 'docs-json'
-                                    );
-                
+                                    ts.isPropertyAssignment(prop) &&
+                                    ts.isIdentifier(prop.name) &&
+                                    prop.name.text === 'type' &&
+                                    ts.isStringLiteral(prop.initializer) &&
+                                    prop.initializer.text === 'docs-json'
+                                );
+
                                 if (typeProperty) {
                                     element.properties.forEach(prop => {
                                         if (ts.isPropertyAssignment(prop) && ts.isIdentifier(prop.name) && prop.name.text === 'file') {
@@ -136,7 +153,7 @@ export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Depend
                 }
             }
         });
-    
+
         return docsJsonPath;
     }
 
@@ -151,16 +168,17 @@ export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Depend
     }
 }
 
-export class Dependency extends vscode.TreeItem {
+export class Node extends vscode.TreeItem {
     constructor(
         public readonly tag: string,
         public readonly docs: string,
+        public readonly dependents: string[],
+        public readonly dependencies: string[],
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
     ) {
         super(tag, collapsibleState);
 
         this.label = this.tag;
-        this.tooltip = this.tag;
-        this.description = this.docs;
+        this.tooltip = this.docs;
     }
 }
