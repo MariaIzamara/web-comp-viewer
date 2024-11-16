@@ -1,9 +1,10 @@
 import * as vscode from 'vscode';
-import * as fs from 'fs';
 import ts from 'typescript';
-import * as path from 'path';
+import * as fs from 'fs';
+import * as fspath from 'path';
 
 const STENCIL_CONFIG_FILE_NAME = 'stencil.config.ts';
+const DOCS_JSON_FILE_NAME = 'docs.json';
 
 type Component = {
     tag: string;
@@ -19,9 +20,15 @@ type DocsJson = {
 export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Node> {
     private rootNodes: Node[] = [];
 
-    readonly onDidChangeTreeData!: vscode.Event<Node | undefined | void>;
+    private _onDidChangeTreeData: vscode.EventEmitter<Node | undefined | void> = new vscode.EventEmitter<Node | undefined | void>();
+    readonly onDidChangeTreeData: vscode.Event<Node | undefined | void> = this._onDidChangeTreeData.event;
 
-    constructor(private workspaceRoot: string) {
+    constructor(private path: string | null) {
+    }
+
+    refresh(path: string | null): void {
+        this.path = path;
+        this._onDidChangeTreeData.fire();
     }
 
     getTreeItem(element: Node): vscode.TreeItem | Thenable<vscode.TreeItem> {
@@ -29,7 +36,12 @@ export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Node> 
     }
 
     getChildren(element?: Node): vscode.ProviderResult<Node[]> {
-        const docsJson = this.getDocsJson(this.workspaceRoot);
+        if (!this.path) {
+            this.setDocsJsonNotFound();
+            return;
+        }
+
+        const docsJson = this.getDocsJson(this.path);
 
         if (element) {
             return this.getElementNodes(this.rootNodes, element);
@@ -74,30 +86,38 @@ export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Node> 
         });
     }
 
-    private getDocsJson(workspaceRoot: string): DocsJson | undefined {
+    private getDocsJson(path: string): DocsJson | undefined {
         try {
-            const stencilConfigPath = path.join(workspaceRoot, STENCIL_CONFIG_FILE_NAME);
-            const docsJsonPath = path.join(workspaceRoot, this.getDocsJsonPath(stencilConfigPath));
-            if (docsJsonPath && this.pathExists(docsJsonPath)) {
-                return JSON.parse(fs.readFileSync(docsJsonPath, 'utf-8'));
+            if (!path.endsWith(DOCS_JSON_FILE_NAME)) {
+                const stencilConfigPath = fspath.join(path, STENCIL_CONFIG_FILE_NAME);
+                path = fspath.join(path, this.getDocsJsonPath(stencilConfigPath));
+            }
+            if (this.pathExists(path)) {
+                return JSON.parse(fs.readFileSync(path, 'utf-8'));
+            } else {
+                this.setDocsJsonNotFound();
             }
         } catch (error) {
-            console.error(`Error reading docs-json: ${error}`);
+            console.error(`Error reading ${DOCS_JSON_FILE_NAME}: ${error}`);
+            this.setDocsJsonNotFound();
         }
 
         return;
     }
 
     private getDocsJsonPath(stencilConfigPath: string): string {
-        if (this.pathExists(stencilConfigPath)) {
-            try {
+        try {
+            if (this.pathExists(stencilConfigPath)) {
                 const stencilConfigFile = fs.readFileSync(stencilConfigPath, 'utf-8');
                 const stencilConfigSourceFile = ts.createSourceFile(STENCIL_CONFIG_FILE_NAME, stencilConfigFile, ts.ScriptTarget.ESNext, false);
 
                 return this.findDocsJsonPath(stencilConfigSourceFile);
-            } catch (error) {
-                console.error(`Error reading ${STENCIL_CONFIG_FILE_NAME}: ${error}`);
+            } else {
+                this.setDocsJsonNotFound();
             }
+        } catch (error) {
+            console.error(`Error reading ${STENCIL_CONFIG_FILE_NAME}: ${error}`);
+            this.setDocsJsonNotFound();
         }
 
         return '';
@@ -165,6 +185,10 @@ export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Node> 
         }
 
         return true;
+    }
+
+    private setDocsJsonNotFound() {
+        vscode.commands.executeCommand('setContext', 'extension.docsJsonNotFound', true);
     }
 }
 

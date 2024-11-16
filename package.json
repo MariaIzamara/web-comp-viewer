@@ -16,24 +16,31 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "web-comp-analyzer-explorer",
-          "title": "Explorer",
+          "id": "web-comp-analyzer",
+          "title": "Web Components Analyzer",
           "icon": "assets/tree.svg"
         }
       ]
     },
+    "viewsWelcome": [
+      {
+        "view": "tree-view",
+        "contents": "It seems that you're not inside a project built with Stencil, or your repository is not configured to generate a docs.json file, which is required for this extension. If this is the case, you can:\n[Open a Different Folder](command:vscode.openFolder)\nIf this was a mistake, please select the correct docs.json file to proceed.\n[Open a Specific File](command:extension.openFile)",
+        "when": "extension.docsJsonNotFound"
+      }
+    ],
     "views": {
-      "web-comp-analyzer-explorer": [
-          {
-            "id": "componentTree",
-            "name": "Component Tree"
-          }
+      "web-comp-analyzer": [
+        {
+          "id": "tree-view",
+          "name": "Tree View"
+        }
       ]
     },
     "commands": [
       {
-        "command": "web-comp-analyzer-explorer.helloWorld",
-        "title": "Mensagem de Hello World"
+        "command": "extension.openFile",
+        "title": "Open a File"
       }
     ]
   },
