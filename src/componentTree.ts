@@ -23,10 +23,10 @@ export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Node> 
     private _onDidChangeTreeData: vscode.EventEmitter<Node | undefined | void> = new vscode.EventEmitter<Node | undefined | void>();
     readonly onDidChangeTreeData: vscode.Event<Node | undefined | void> = this._onDidChangeTreeData.event;
 
-    constructor(private path: string | null) {
+    constructor(private path: string | undefined) {
     }
 
-    refresh(path: string | null): void {
+    refresh(path: string | undefined): void {
         this.path = path;
         this._onDidChangeTreeData.fire();
     }
@@ -44,14 +44,14 @@ export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Node> 
         const docsJson = this.getDocsJson(this.path);
 
         if (element) {
-            return this.getElementNodes(this.rootNodes, element);
+            return this.getElementNodesFromRootNodes(this.rootNodes, element);
         } else {
-            this.rootNodes = this.getRootNodesInDocsJson(docsJson);
+            this.rootNodes = this.getRootNodesFromDocsJson(docsJson);
             return this.rootNodes;
         }
     }
 
-    private getElementNodes(root: Node[], element: Node): Node[] {
+    private getElementNodesFromRootNodes(root: Node[], element: Node): Node[] {
         const dependencies = element.dependencies;
 
         return dependencies.flatMap(dependency => {
@@ -69,7 +69,7 @@ export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Node> 
         });
     }
 
-    private getRootNodesInDocsJson(docsJson: DocsJson | undefined): Node[] {
+    private getRootNodesFromDocsJson(docsJson: DocsJson | undefined): Node[] {
         if (!docsJson) {
             return [];
         }
@@ -90,22 +90,24 @@ export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Node> 
         try {
             if (!path.endsWith(DOCS_JSON_FILE_NAME)) {
                 const stencilConfigPath = fspath.join(path, STENCIL_CONFIG_FILE_NAME);
-                path = fspath.join(path, this.getDocsJsonPath(stencilConfigPath));
+                const docsJsonPath = this.getDocsJsonPath(stencilConfigPath);
+                if(!docsJsonPath) {
+                    throw Error('Path not found.');
+                }
+                path = fspath.join(path, docsJsonPath);
             }
             if (this.pathExists(path)) {
                 return JSON.parse(fs.readFileSync(path, 'utf-8'));
             } else {
-                this.setDocsJsonNotFound();
+                throw Error('File not found.');
             }
         } catch (error) {
-            console.error(`Error reading ${DOCS_JSON_FILE_NAME}: ${error}`);
+            console.error(`[${DOCS_JSON_FILE_NAME}] ${error}`);
             this.setDocsJsonNotFound();
         }
-
-        return;
     }
 
-    private getDocsJsonPath(stencilConfigPath: string): string {
+    private getDocsJsonPath(stencilConfigPath: string): string | undefined {
         try {
             if (this.pathExists(stencilConfigPath)) {
                 const stencilConfigFile = fs.readFileSync(stencilConfigPath, 'utf-8');
@@ -113,14 +115,11 @@ export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Node> 
 
                 return this.findDocsJsonPath(stencilConfigSourceFile);
             } else {
-                this.setDocsJsonNotFound();
+                throw Error('File not found.');
             }
         } catch (error) {
-            console.error(`Error reading ${STENCIL_CONFIG_FILE_NAME}: ${error}`);
-            this.setDocsJsonNotFound();
+            console.error(`[${STENCIL_CONFIG_FILE_NAME}] ${error}`);
         }
-
-        return '';
     }
 
     private findDocsJsonPath(stencilConfigSourceFile: ts.SourceFile): string {
@@ -205,4 +204,9 @@ export class Node extends vscode.TreeItem {
         this.label = this.tag;
         this.tooltip = this.docs;
     }
+
+    iconPath = {
+		light: fspath.join(__filename, '..', '..', 'assets', 'light', 'node.svg'),
+		dark: fspath.join(__filename, '..', '..', 'assets', 'dark', 'node.svg')
+	};
 }

@@ -8,7 +8,7 @@ import { ComponentTreeDataProvider } from './componentTree';
 
 export function activate(context: vscode.ExtensionContext) {
 	const rootPath = (vscode.workspace.workspaceFolders && (vscode.workspace.workspaceFolders.length > 0))
-		? vscode.workspace.workspaceFolders[0].uri.fsPath : null;
+		? vscode.workspace.workspaceFolders[0].uri.fsPath : undefined;
 
 	const componentTreeDataProvider = new ComponentTreeDataProvider(rootPath);
 	vscode.window.registerTreeDataProvider('tree-view', componentTreeDataProvider);
@@ -22,13 +22,13 @@ export function activate(context: vscode.ExtensionContext) {
 				filters: { 'JSON Files': ['json'] }
 			});
 
-			let docsJsonPath: string | null = null;
+			let docsJsonPath: string | undefined;
 
 			if (fileUri && fileUri[0]) {
 				await vscode.commands.executeCommand('vscode.open', fileUri[0]);
 				docsJsonPath = fileUri[0].path.replaceAll('/', '\\').slice(1);
 			} else {
-				console.log('Command extension.openFile: Nenhum arquivo foi selecionado.');
+				console.log('[extension.openFile] No files were selected.');
 			}
 			componentTreeDataProvider.refresh(docsJsonPath);
 		}
