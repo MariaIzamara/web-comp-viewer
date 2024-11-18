@@ -37,6 +37,7 @@ export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Node> 
 
     getChildren(element?: Node): vscode.ProviderResult<Node[]> {
         if (!this.path) {
+            console.log('[ComponentTreeDataProvider] No defined path.');
             this.setDocsJsonNotFound();
             return;
         }
@@ -91,7 +92,7 @@ export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Node> 
             if (!path.endsWith(DOCS_JSON_FILE_NAME)) {
                 const stencilConfigPath = fspath.join(path, STENCIL_CONFIG_FILE_NAME);
                 const docsJsonPath = this.getDocsJsonPath(stencilConfigPath);
-                if(!docsJsonPath) {
+                if (!docsJsonPath) {
                     throw Error('Path not found.');
                 }
                 path = fspath.join(path, docsJsonPath);
@@ -206,7 +207,7 @@ export class Node extends vscode.TreeItem {
     }
 
     iconPath = {
-		light: fspath.join(__filename, '..', '..', 'assets', 'light', 'node.svg'),
-		dark: fspath.join(__filename, '..', '..', 'assets', 'dark', 'node.svg')
-	};
+        light: fspath.join(__filename, '..', '..', 'assets', 'light', 'node.svg'),
+        dark: fspath.join(__filename, '..', '..', 'assets', 'dark', 'node.svg')
+    };
 }
