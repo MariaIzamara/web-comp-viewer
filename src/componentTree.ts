@@ -9,6 +9,7 @@ const DOCS_JSON_FILE_NAME = 'docs.json';
 type Component = {
     tag: string;
     docs: string;
+    filePath: string;
     dependents: string[];
     dependencies: string[];
 };
@@ -29,6 +30,10 @@ export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Node> 
     refresh(path: string | undefined): void {
         this.path = path;
         this._onDidChangeTreeData.fire();
+    }
+
+    getPath(): string | undefined {
+        return this.path;
     }
 
     getTreeItem(element: Node): vscode.TreeItem | Thenable<vscode.TreeItem> {
@@ -62,11 +67,11 @@ export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Node> 
                 return [];
             }
 
-            const { tag, docs, dependents, dependencies } = component;
+            const { tag, docs, path, dependents, dependencies } = component;
             const collapsibleState = dependencies.length > 0
                 ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None;
 
-            return [new Node(tag, docs, dependents, dependencies, collapsibleState)];
+            return [new Node(tag, docs, path, dependents, dependencies, collapsibleState)];
         });
     }
 
@@ -78,12 +83,13 @@ export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Node> 
         const components = docsJson.components;
 
         return components.map(component => {
-            const { tag, docs, dependents, dependencies } = component;
+            const { tag, docs, filePath, dependents, dependencies } = component;
+            const path = fspath.join(this.path!, filePath);
             const filteredDependencies = dependencies.filter(dependency => components.find(component => component.tag === dependency));
             const collapsibleState = filteredDependencies.length > 0
                 ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None;
 
-            return new Node(tag, docs, dependents, filteredDependencies, collapsibleState);
+            return new Node(tag, docs, path, dependents, filteredDependencies, collapsibleState);
         });
     }
 
@@ -196,6 +202,7 @@ export class Node extends vscode.TreeItem {
     constructor(
         public readonly tag: string,
         public readonly docs: string,
+        public readonly path: string,
         public readonly dependents: string[],
         public readonly dependencies: string[],
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
@@ -206,8 +213,8 @@ export class Node extends vscode.TreeItem {
         this.tooltip = this.docs;
     }
 
-    iconPath = {
-        light: fspath.join(__filename, '..', '..', 'assets', 'light', 'node.svg'),
-        dark: fspath.join(__filename, '..', '..', 'assets', 'dark', 'node.svg')
-    };
+    // iconPath = {
+    //     light: fspath.join(__filename, '..', '..', 'assets', 'light', 'node.svg'),
+    //     dark: fspath.join(__filename, '..', '..', 'assets', 'dark', 'node.svg')
+    // };
 }
