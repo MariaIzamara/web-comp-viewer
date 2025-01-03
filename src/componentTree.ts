@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import ts from 'typescript';
 import * as fs from 'fs';
 import * as fspath from 'path';
+import { findAbsoluteFilePath } from './utils';
 
 const STENCIL_CONFIG_FILE_NAME = 'stencil.config.ts';
 const DOCS_JSON_FILE_NAME = 'docs.json';
@@ -9,6 +10,7 @@ const DOCS_JSON_FILE_NAME = 'docs.json';
 type Component = {
     tag: string;
     docs: string;
+    filePath: string;
     dependents: string[];
     dependencies: string[];
 };
@@ -29,6 +31,10 @@ export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Node> 
     refresh(path: string | undefined): void {
         this.path = path;
         this._onDidChangeTreeData.fire();
+    }
+
+    getPath(): string | undefined {
+        return this.path;
     }
 
     getTreeItem(element: Node): vscode.TreeItem | Thenable<vscode.TreeItem> {
@@ -62,11 +68,11 @@ export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Node> 
                 return [];
             }
 
-            const { tag, docs, dependents, dependencies } = component;
+            const { tag, docs, path, dependents, dependencies } = component;
             const collapsibleState = dependencies.length > 0
                 ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None;
 
-            return [new Node(tag, docs, dependents, dependencies, collapsibleState)];
+            return [new Node(tag, docs, path, dependents, dependencies, collapsibleState)];
         });
     }
 
@@ -78,13 +84,22 @@ export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Node> 
         const components = docsJson.components;
 
         return components.map(component => {
-            const { tag, docs, dependents, dependencies } = component;
+            const { tag, docs, filePath, dependents, dependencies } = component;
+            const path = this.getAbsoluteFilePath(filePath);
             const filteredDependencies = dependencies.filter(dependency => components.find(component => component.tag === dependency));
             const collapsibleState = filteredDependencies.length > 0
                 ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None;
 
-            return new Node(tag, docs, dependents, filteredDependencies, collapsibleState);
+            return new Node(tag, docs, path, dependents, filteredDependencies, collapsibleState);
         });
+    }
+
+    private getAbsoluteFilePath(relativeFilePath: string): string | undefined {
+        if (this.path && !this.path.endsWith(DOCS_JSON_FILE_NAME)) {
+            return fspath.join(this.path, relativeFilePath);
+        }
+
+        return findAbsoluteFilePath(this.path, relativeFilePath);
     }
 
     private getDocsJson(path: string): DocsJson | undefined {
@@ -97,7 +112,7 @@ export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Node> 
                 }
                 path = fspath.join(path, docsJsonPath);
             }
-            if (this.pathExists(path)) {
+            if (fs.existsSync(path)) {
                 return JSON.parse(fs.readFileSync(path, 'utf-8'));
             } else {
                 throw Error('File not found.');
@@ -110,7 +125,7 @@ export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Node> 
 
     private getDocsJsonPath(stencilConfigPath: string): string | undefined {
         try {
-            if (this.pathExists(stencilConfigPath)) {
+            if (fs.existsSync(stencilConfigPath)) {
                 const stencilConfigFile = fs.readFileSync(stencilConfigPath, 'utf-8');
                 const stencilConfigSourceFile = ts.createSourceFile(STENCIL_CONFIG_FILE_NAME, stencilConfigFile, ts.ScriptTarget.ESNext, false);
 
@@ -177,16 +192,6 @@ export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Node> 
         return docsJsonPath;
     }
 
-    private pathExists(path: string): boolean {
-        try {
-            fs.accessSync(path);
-        } catch {
-            return false;
-        }
-
-        return true;
-    }
-
     private setDocsJsonNotFound() {
         vscode.commands.executeCommand('setContext', 'extension.docsJsonNotFound', true);
     }
@@ -196,6 +201,7 @@ export class Node extends vscode.TreeItem {
     constructor(
         public readonly tag: string,
         public readonly docs: string,
+        public readonly path: string | undefined,
         public readonly dependents: string[],
         public readonly dependencies: string[],
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
@@ -205,9 +211,4 @@ export class Node extends vscode.TreeItem {
         this.label = this.tag;
         this.tooltip = this.docs;
     }
-
-    iconPath = {
-        light: fspath.join(__filename, '..', '..', 'assets', 'light', 'node.svg'),
-        dark: fspath.join(__filename, '..', '..', 'assets', 'dark', 'node.svg')
-    };
 }

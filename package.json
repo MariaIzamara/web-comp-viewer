@@ -24,25 +24,70 @@
     },
     "viewsWelcome": [
       {
-        "view": "tree-view",
-        "contents": "It seems that you're not inside a project built with Stencil, or your repository is not configured to generate a docs.json file, which is required for this extension. If this is the case, you can:\n[Open a Different Folder](command:vscode.openFolder)\nIf this was a mistake, please select the correct docs.json file to proceed.\n[Open a Specific File](command:extension.openFile)",
+        "view": "treeView",
+        "contents": "It seems that you're not inside a project built with Stencil, or your repository is not configured to generate a docs.json file, which is required for this extension. If this is the case, you can:\n[Open a Different Folder](command:vscode.openFolder)\nIf this was a mistake, please select the correct docs.json file to proceed.\n[Open a Specific File](command:treeView.openFile)",
         "when": "extension.docsJsonNotFound"
       }
     ],
     "views": {
       "web-comp-analyzer": [
         {
-          "id": "tree-view",
+          "id": "treeView",
           "name": "Tree View"
         }
       ]
     },
     "commands": [
       {
-        "command": "extension.openFile",
+        "command": "treeView.openFile",
         "title": "Open a File"
+      },
+      {
+        "command": "treeView.refresh",
+        "title": "Refresh",
+        "icon": {
+          "light": "assets/light/refresh.svg",
+          "dark": "assets/dark/refresh.svg"
+        }
+      },
+      {
+        "command": "treeView.open",
+        "title": "Open Tree Visualization",
+        "icon": {
+          "light": "assets/light/open.svg",
+          "dark": "assets/dark/open.svg"
+        }
+      },
+      {
+        "command": "treeView.edit",
+        "title": "Edit",
+        "icon": {
+          "light": "assets/light/edit.svg",
+          "dark": "assets/dark/edit.svg"
+        }
       }
-    ]
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "treeView.refresh",
+          "when": "view == treeView",
+          "group": "navigation@1"
+        },
+        {
+          "command": "treeView.open",
+          "when": "view == treeView",
+          "group": "navigation@2"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "treeView.edit",
+          "when": "view == treeView",
+          "group": "inline"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
