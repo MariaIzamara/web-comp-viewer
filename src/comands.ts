@@ -4,8 +4,8 @@
  * @description all of comands are defined here
  */
 import * as vscode from 'vscode';
-import * as os from 'os';
 import * as fspath from 'path';
+import { normalizePath } from './utils';
 import { ComponentTreeDataProvider, Node } from './componentTree';
 
 const treeView_openFile = (componentTreeDataProvider: ComponentTreeDataProvider) => vscode.commands.registerCommand(
@@ -21,10 +21,7 @@ const treeView_openFile = (componentTreeDataProvider: ComponentTreeDataProvider)
 
         if (fileUri && fileUri[0]) {
             await vscode.commands.executeCommand('vscode.open', fileUri[0]);
-            docsJsonPath = fspath.normalize(fileUri[0].path);
-            if (os.platform() === 'win32') {
-                docsJsonPath = docsJsonPath.slice(1);
-            }
+            docsJsonPath = normalizePath(fileUri[0].path);
         } else {
             console.log('[treeView.openFile] No files were selected.');
         }
@@ -37,7 +34,7 @@ const treeView_refresh = (componentTreeDataProvider: ComponentTreeDataProvider) 
     () => {
         const path = componentTreeDataProvider.getPath();
         if(!path) {
-            console.error('[treeView.refresh] No path defined.');
+            console.log('[treeView.refresh] No path defined.');
             return;
         }
         componentTreeDataProvider.refresh(path);
@@ -72,4 +69,4 @@ const treeView_edit = vscode.commands.registerCommand(
     }
 );
 
-export const comands = [treeView_openFile, treeView_refresh, treeView_edit];
+export const comands = [treeView_openFile, treeView_refresh, treeView_open, treeView_edit];

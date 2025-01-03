@@ -8,14 +8,15 @@ import { ComponentTreeDataProvider } from './componentTree';
 import { comands } from './comands';
 
 export function activate(context: vscode.ExtensionContext) {
-	const rootPath = (vscode.workspace.workspaceFolders && (vscode.workspace.workspaceFolders.length > 0))
-		? vscode.workspace.workspaceFolders[0].uri.fsPath : undefined;
+	const rootPath = vscode.workspace.workspaceFolders && (vscode.workspace.workspaceFolders.length > 0)
+		? vscode.workspace.workspaceFolders[0].uri.fsPath
+		: undefined;
 
 	const componentTreeDataProvider = new ComponentTreeDataProvider(rootPath);
 	vscode.window.registerTreeDataProvider('treeView', componentTreeDataProvider);
 
 	comands.forEach(command => {
-		if(typeof command === 'function') {
+		if (typeof command === 'function') {
 			context.subscriptions.push(command(componentTreeDataProvider));
 			return;
 		}
