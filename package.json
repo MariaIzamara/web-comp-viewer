@@ -52,7 +52,7 @@
       },
       {
         "command": "treeView.open",
-        "title": "Open Tree Visualization",
+        "title": "Open Tree",
         "icon": {
           "light": "assets/light/open.svg",
           "dark": "assets/dark/open.svg"
