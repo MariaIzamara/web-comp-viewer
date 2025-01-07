@@ -4,8 +4,8 @@
  * @description application will start from this file
  */
 import * as vscode from 'vscode';
-import { ComponentTreeDataProvider } from './componentTree';
 import { comands } from './comands';
+import { ComponentTreeDataProvider } from './componentTree';
 
 export function activate(context: vscode.ExtensionContext) {
 	const rootPath = vscode.workspace.workspaceFolders && (vscode.workspace.workspaceFolders.length > 0)

@@ -1,25 +1,5 @@
-import * as os from 'os';
 import * as fs from 'fs';
 import * as fspath from 'path';
-
-/**
- * Normalizes a file path to ensure compatibility across different operating systems.
- * 
- * - On all platforms, the path is normalized by resolving unnecessary segments like `.` and `..`.
- * - On Windows, it adjusts paths that start with a forward slash (`/`) to remove the leading slash.
- * 
- * @param {string} path - The file path to be normalized.
- * @returns {string} - The normalized file path.
- */
-export const normalizePath = (path: string): string | undefined => {
-    let newPath = fspath.normalize(path);
-
-    if (os.platform() === 'win32' && newPath.startsWith('/')) {
-        newPath = newPath.slice(1);
-    }
-
-    return newPath;
-};
 
 /**
  * Finds the absolute file path for a given relative path by traversing up the directory tree.

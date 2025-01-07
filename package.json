@@ -72,19 +72,19 @@
         {
           "command": "treeView.refresh",
           "when": "view == treeView",
-          "group": "navigation@1"
-        },
-        {
-          "command": "treeView.open",
-          "when": "view == treeView",
-          "group": "navigation@2"
+          "group": "navigation"
         }
       ],
       "view/item/context": [
         {
+          "command": "treeView.open",
+          "when": "view == treeView",
+          "group": "inline@1"
+        },
+        {
           "command": "treeView.edit",
           "when": "view == treeView",
-          "group": "inline"
+          "group": "inline@2"
         }
       ]
     }
