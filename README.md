@@ -1,6 +1,6 @@
-# web-comp-analyzer README
+# web-comp-viewer README
 
-This is the README for your extension "web-comp-analyzer". After writing up a brief description, we recommend including the following sections.
+This is the README for your extension "web-comp-viewer". After writing up a brief description, we recommend including the following sections.
 
 ## Features
 

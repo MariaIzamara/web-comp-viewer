@@ -1,6 +1,6 @@
 {
-  "name": "web-comp-analyzer",
-  "displayName": "Web Components Analyzer",
+  "name": "web-comp-viewer",
+  "displayName": "Web Components Viewer",
   "description": "A plugin for vscode to view your web components dependency graph",
   "version": "0.0.1",
   "license": "MIT",
@@ -16,8 +16,8 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "web-comp-analyzer",
-          "title": "Web Components Analyzer",
+          "id": "web-comp-viewer",
+          "title": "Web Components Viewer",
           "icon": "assets/tree.svg"
         }
       ]
@@ -30,7 +30,7 @@
       }
     ],
     "views": {
-      "web-comp-analyzer": [
+      "web-comp-viewer": [
         {
           "id": "treeView",
           "name": "Tree View"
@@ -51,14 +51,6 @@
         }
       },
       {
-        "command": "treeView.open",
-        "title": "Open Tree Visualization",
-        "icon": {
-          "light": "assets/light/open.svg",
-          "dark": "assets/dark/open.svg"
-        }
-      },
-      {
         "command": "treeView.edit",
         "title": "Edit",
         "icon": {
@@ -72,12 +64,7 @@
         {
           "command": "treeView.refresh",
           "when": "view == treeView",
-          "group": "navigation@1"
-        },
-        {
-          "command": "treeView.open",
-          "when": "view == treeView",
-          "group": "navigation@2"
+          "group": "navigation"
         }
       ],
       "view/item/context": [
