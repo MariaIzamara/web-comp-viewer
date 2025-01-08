@@ -1,15 +1,25 @@
 {
   "name": "web-comp-viewer",
   "displayName": "Web Components Viewer",
-  "description": "A plugin for vscode to view your web components dependency graph",
-  "version": "0.0.1",
-  "license": "MIT",
+  "description": "View and navigate component structures in your Stencil project.",
+  "icon": "assets/tree.png",
+  "version": "1.0.0",
+  "license": "SEE LICENSE IN LICENSE.txt",
   "engines": {
     "vscode": "^1.94.0"
   },
   "categories": [
+    "Visualization",
     "Other"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MariaIzamara/web-comp-viewer.git"
+  },
+  "homepage": "https://github.com/MariaIzamara/web-comp-viewer/blob/master/README.md",
+  "bugs": {
+    "url": "https://github.com/MariaIzamara/web-comp-viewer/issues"
+  },
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
