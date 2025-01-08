@@ -1,71 +1,29 @@
-# web-comp-analyzer README
+# WebCompViewer
 
-This is the README for your extension "web-comp-analyzer". After writing up a brief description, we recommend including the following sections.
+The Web Components Viewer is an extension for Stencil projects that makes it easier to view and navigate component structures. With this extension, you can explore and access the hierarchy of components directly in VS Code, without wasting time on manual searches or struggling to track project updates.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+- **Component Tree:** View the complete hierarchy of components defined in your project's `docs.json`. Each component displays its relationships and may appear in different parts of the tree.
+- **Quick Edit:** Click the pencil icon to open the component's file directly in the editor, saving time and effort.
+- **Simplified Updates:** Capture the latest changes in `docs.json` after the project's build with the refresh button.
+- **Guaranteed Compatibility:** Works seamlessly with all VS Code themes (dark, light, etc.) and on all supported operating systems.
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+To use Web Components Viewer, your project must meet the following criteria:
 
-## Extension Settings
+1. Be a Stencil project configured to generate the `docs.json` file. Check the official documentation for more details: [Stencil JSON Docs](https://stenciljs.com/docs/docs-json).
+2. The `docs.json` file must be located in a way that the extension can automatically find it (see below).
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+### How Does the Extension Locate `docs.json`?
 
-For example:
+The extension performs an automated process to find the `docs.json` file:
 
-This extension contributes the following settings:
+1. **Search in the project root:** Checks if the file is in the root of the workspace.
+2. **Search in `stencil.config.js`:** If the file is not in the root, the extension checks the outputTargets property within the config object in the `stencil.config.js` file to locate the `docs.json` path.
+3. **Guidance message:** If the file is still not found, the extension will display a message asking you to:
+    - Open a folder containing the `docs.json`, or
+    - Open the `docs.json` file directly in the editor.
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+With Web Components Viewer, you gain productivity, organization, and agility when working with Stencil projects. Install it now and see the difference in your workflow! 🚀

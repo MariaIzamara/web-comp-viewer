@@ -1,7 +1,7 @@
-import * as vscode from 'vscode';
-import ts from 'typescript';
 import * as fs from 'fs';
 import * as fspath from 'path';
+import ts from 'typescript';
+import * as vscode from 'vscode';
 import { findAbsoluteFilePath } from './utils';
 
 const STENCIL_CONFIG_FILE_NAME = 'stencil.config.ts';
@@ -105,12 +105,18 @@ export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Node> 
     private getDocsJson(path: string): DocsJson | undefined {
         try {
             if (!path.endsWith(DOCS_JSON_FILE_NAME)) {
-                const stencilConfigPath = fspath.join(path, STENCIL_CONFIG_FILE_NAME);
-                const docsJsonPath = this.getDocsJsonPath(stencilConfigPath);
-                if (!docsJsonPath) {
-                    throw Error('Path not found.');
+                const docsJsonPath = fspath.join(path, DOCS_JSON_FILE_NAME);
+                if (fs.existsSync(docsJsonPath)) {
+                    path = docsJsonPath;
                 }
-                path = fspath.join(path, docsJsonPath);
+                else {
+                    const stencilConfigPath = fspath.join(path, STENCIL_CONFIG_FILE_NAME);
+                    const relativeDocsJsonPath = this.getDocsJsonPath(stencilConfigPath);
+                    if (!relativeDocsJsonPath) {
+                        throw Error('Path not found.');
+                    }
+                    path = fspath.join(path, relativeDocsJsonPath);
+                }
             }
             if (fs.existsSync(path)) {
                 return JSON.parse(fs.readFileSync(path, 'utf-8'));
