@@ -3,6 +3,7 @@
  *
  * @description all of comands are defined here
  */
+import * as fs from 'fs';
 import * as vscode from 'vscode';
 import { ComponentTreeDataProvider, Node } from './componentTree';
 
@@ -23,19 +24,24 @@ const treeView_openFile = (componentTreeDataProvider: ComponentTreeDataProvider)
         } else {
             console.log('[treeView.openFile] No files were selected.');
         }
-        componentTreeDataProvider.refresh(docsJsonPath);
+
+        if (docsJsonPath && fs.existsSync(docsJsonPath)) {
+            componentTreeDataProvider.refresh(docsJsonPath);
+        } else {
+            console.log('[treeView.openFile] File does not exist.');
+        }
     }
 );
 
 const treeView_refresh = (componentTreeDataProvider: ComponentTreeDataProvider) => vscode.commands.registerCommand(
     'treeView.refresh',
     () => {
-        const path = componentTreeDataProvider.getPath();
-        if (!path) {
-            console.log('[treeView.refresh] No path defined.');
+        const docsJsonPath = componentTreeDataProvider.getDocsJsonPath();
+        if (!docsJsonPath) {
+            console.log('[treeView.refresh] No docsJsonPath defined.');
             return;
         }
-        componentTreeDataProvider.refresh(path);
+        componentTreeDataProvider.refresh(docsJsonPath);
     }
 );
 
