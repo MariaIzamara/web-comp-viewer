@@ -2,12 +2,11 @@ import * as fs from 'fs';
 import * as fspath from 'path';
 import ts from 'typescript';
 import { DOCS_JSON_FILE_NAME, STENCIL_CONFIG_FILE_NAME } from './constants';
-import { setDocsJsonNotFoundContext, setDocsJsonPathContext } from './contexts';
+import { setDocsJsonNotFoundContext } from './contexts';
 import { DocsJson } from './types';
 
 /**
  * Retrieves the content of the `docs.json` file based on the provided path.
- * If the path does not point directly to the `docs.json`, the function attempts to:
  * 1. Find `docs.json` in the given folder.
  * 2. Look for the `stencil.config.js` file and extract the `docs.json` path from the `outputTargets` property.
  * If none of these options succeed, an error is logged.
@@ -40,7 +39,6 @@ export const getDocsJsonPath = (path: string | undefined): string | undefined =>
                 throw Error('File not found.');
             }
         }
-        setDocsJsonPathContext(path);
         return path;
     } catch (error) {
         console.error(`[${DOCS_JSON_FILE_NAME}] ${error}`);

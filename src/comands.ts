@@ -36,12 +36,7 @@ const treeView_openFile = (componentTreeDataProvider: ComponentTreeDataProvider)
 const treeView_refresh = (componentTreeDataProvider: ComponentTreeDataProvider) => vscode.commands.registerCommand(
     'treeView.refresh',
     () => {
-        const docsJsonPath = componentTreeDataProvider.getDocsJsonPath();
-        if (!docsJsonPath) {
-            console.log('[treeView.refresh] No docsJsonPath defined.');
-            return;
-        }
-        componentTreeDataProvider.refresh(docsJsonPath);
+        componentTreeDataProvider.refresh();
     }
 );
 

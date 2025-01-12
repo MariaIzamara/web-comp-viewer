@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as vscode from 'vscode';
-import { findAbsoluteFilePath } from './fileUtils';
+import { findAbsoluteFilePath } from './pathUtils';
 import { DocsJson } from './types';
 
 export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Node> {
@@ -12,16 +12,14 @@ export class ComponentTreeDataProvider implements vscode.TreeDataProvider<Node> 
     constructor(private docsJsonPath: string | undefined) {
     }
 
-    refresh(docsJsonPath: string): void {
-        this.docsJsonPath = docsJsonPath;
+    refresh(docsJsonPath: string | undefined = undefined): void {
+        if (docsJsonPath) {
+            this.docsJsonPath = docsJsonPath;
+        }
         this._onDidChangeTreeData.fire();
     }
 
-    getDocsJsonPath(): string | undefined {
-        return this.docsJsonPath;
-    }
-
-    getTreeItem(element: Node): vscode.TreeItem | Thenable<vscode.TreeItem> {
+    getTreeItem(element: Node): vscode.TreeItem {
         return element;
     }
 

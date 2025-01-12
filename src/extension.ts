@@ -6,7 +6,7 @@
 import * as vscode from 'vscode';
 import { comands } from './comands';
 import { ComponentTreeDataProvider } from './componentTree';
-import { getDocsJsonPath } from './fileUtils';
+import { getDocsJsonPath } from './pathUtils';
 
 export function activate(context: vscode.ExtensionContext) {
 	const rootPath = vscode.workspace.workspaceFolders && (vscode.workspace.workspaceFolders.length > 0)
