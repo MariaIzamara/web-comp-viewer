@@ -12,6 +12,12 @@
     "Visualization",
     "Other"
   ],
+  "keywords": [
+    "webcomponents",
+    "stencil",
+    "stenciljs",
+    "viewer"
+  ],
   "publisher": "MariaIzamaraCoutinho",
   "repository": {
     "type": "git",
@@ -24,6 +30,14 @@
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
+    "views": {
+      "web-comp-viewer": [
+        {
+          "id": "treeView",
+          "name": "Tree View"
+        }
+      ]
+    },
     "viewsContainers": {
       "activitybar": [
         {
@@ -37,17 +51,9 @@
       {
         "view": "treeView",
         "contents": "It seems that you're not inside a project built with Stencil, or your repository is not configured to generate a docs.json file, which is required for this extension. If this is the case, you can:\n[Open a Different Folder](command:vscode.openFolder)\nIf this was a mistake, please select the correct docs.json file to proceed.\n[Open a Specific File](command:treeView.openFile)",
-        "when": "extension.docsJsonNotFound"
+        "when": "docsJsonNotFound"
       }
     ],
-    "views": {
-      "web-comp-viewer": [
-        {
-          "id": "treeView",
-          "name": "Tree View"
-        }
-      ]
-    },
     "commands": [
       {
         "command": "treeView.openFile",
