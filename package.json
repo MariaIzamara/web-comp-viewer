@@ -3,7 +3,7 @@
   "displayName": "Web Components Viewer",
   "description": "View and navigate component structures in your Stencil project.",
   "icon": "assets/tree.png",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "license": "SEE LICENSE IN LICENSE.txt",
   "engines": {
     "vscode": "^1.94.0"
